@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending Issue Resolver Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .header { background: #2c3e50; color: white; padding: 1rem; text-align: center; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 2rem; font-weight: bold; color: #3498db; }
+        .stat-label { color: #7f8c8d; margin-top: 0.5rem; }
+        .section { background: white; margin-bottom: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .section-header { background: #34495e; color: white; padding: 1rem; border-radius: 8px 8px 0 0; }
+        .section-content { padding: 1rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #ecf0f1; }
+        th { background: #f8f9fa; font-weight: 600; }
+        .status-active { color: #e74c3c; font-weight: bold; }
+        .status-monitoring { color: #f39c12; }
+        .severity-high { background: #e74c3c; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; }
+        .severity-medium { background: #f39c12; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; }
+        .refresh-btn { background: #3498db; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-bottom: 1rem; }
+        .refresh-btn:hover { background: #2980b9; }
+        .loading { text-align: center; padding: 2rem; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Trending Issue Resolver Dashboard</h1>
+        <p>Real-time monitoring and resolution system</p>
+    </div>
+
+    <div class="container">
+        <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Data</button>
+        
+        <!-- System Status -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="system-status">Loading...</div>
+                <div class="stat-label">System Status</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="active-issues">-</div>
+                <div class="stat-label">Active Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-affected">-</div>
+                <div class="stat-label">Total Affected Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="kb-articles">-</div>
+                <div class="stat-label">KB Articles</div>
+            </div>
+        </div>
+
+        <!-- Trending Issues -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📊 Trending Issues</h2>
+            </div>
+            <div class="section-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Count</th>
+                            <th>Severity</th>
+                            <th>First Seen</th>
+                            <th>Last Seen</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trending-issues">
+                        <tr><td colspan="6" class="loading">Loading trending issues...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Resolutions -->
+        <div class="section">
+            <div class="section-header">
+                <h2>🔧 Recent Resolutions</h2>
+            </div>
+            <div class="section-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Issue Type</th>
+                            <th>Product Area</th>
+                            <th>Affected Users</th>
+                            <th>Resolved At</th>
+                            <th>Channels</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-resolutions">
+                        <tr><td colspan="5" class="loading">Loading recent resolutions...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Knowledge Base Stats -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📚 Knowledge Base Statistics</h2>
+            </div>
+            <div class="section-content" id="kb-stats">
+                <div class="loading">Loading knowledge base statistics...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(endpoint);
+                return await response.json();
+            } catch (error) {
+                console.error(`Error fetching ${endpoint}:`, error);
+                return null;
+            }
+        }
+
+        async function updateSystemStatus() {
+            const status = await fetchData('/api/system-status');
+            if (status) {
+                document.getElementById('system-status').textContent = status.status;
+                document.getElementById('active-issues').textContent = status.active_issues;
+                document.getElementById('total-affected').textContent = status.total_issues;
+                document.getElementById('kb-articles').textContent = status.kb_articles;
+            }
+        }
+
+        async function updateTrendingIssues() {
+            const issues = await fetchData('/api/trending-issues');
+            const tbody = document.getElementById('trending-issues');
+            
+            if (issues && issues.length > 0) {
+                tbody.innerHTML = issues.map(issue => `
+                    <tr>
+                        <td>${issue.category}</td>
+                        <td>${issue.count}</td>
+                        <td><span class="severity-${issue.severity.toLowerCase()}">${issue.severity}</span></td>
+                        <td>${issue.first_seen}</td>
+                        <td>${issue.last_seen}</td>
+                        <td class="status-${issue.status.toLowerCase()}">${issue.status}</td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #27ae60;">✅ No trending issues detected</td></tr>';
+            }
+        }
+
+        async function updateRecentResolutions() {
+            const resolutions = await fetchData('/api/recent-resolutions');
+            const tbody = document.getElementById('recent-resolutions');
+            
+            if (resolutions && resolutions.length > 0) {
+                tbody.innerHTML = resolutions.map(res => `
+                    <tr>
+                        <td>${res.issue_type}</td>
+                        <td>${res.product_area}</td>
+                        <td>${res.affected_customers}</td>
+                        <td>${res.timestamp}</td>
+                        <td>${res.channels}</td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No recent resolutions</td></tr>';
+            }
+        }
+
+        async function updateKBStats() {
+            const stats = await fetchData('/api/kb-stats');
+            const container = document.getElementById('kb-stats');
+            
+            if (stats) {
+                const categories = Object.entries(stats.by_category).map(([cat, count]) => 
+                    `<li>${cat}: ${count} articles</li>`
+                ).join('');
+                
+                container.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div>
+                            <h4>Total Articles: ${stats.total_articles}</h4>
+                            <h4>Avg Success Rate: ${stats.avg_success_rate.toFixed(1)}%</h4>
+                        </div>
+                        <div>
+                            <h4>By Category:</h4>
+                            <ul>${categories}</ul>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        async function refreshData() {
+            await Promise.all([
+                updateSystemStatus(),
+                updateTrendingIssues(),
+                updateRecentResolutions(),
+                updateKBStats()
+            ]);
+        }
+
+        // Initial load
+        refreshData();
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshData, 30000);
+    </script>
+</body>
+</html>
