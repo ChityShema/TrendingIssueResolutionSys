@@ -353,4 +353,4 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
 
 **Built with ❤️ for Google Cloud Hackathon 2025**
 
-For support or questions, please open an issue or contact the development team.
+For support or questions, please open an issue or contact shyam-bharat.pathivada@capgemini.com
