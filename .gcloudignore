@@ -1,0 +1,26 @@
+# Ignore common files that shouldn't be in the Docker build
+.git/
+.gitignore
+README.md
+.env
+.env.example
+*.pyc
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.venv/
+venv/
+env/
+ENV/
+.DS_Store
+Thumbs.db
+*.log
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+build/
+dist/
+*.egg-info/

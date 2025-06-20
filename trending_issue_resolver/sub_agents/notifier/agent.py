@@ -3,7 +3,7 @@
 from typing import Any, Dict, List, Optional
 import json
 
-from google.adk import Agent, AgentContext, SequentialAgent, register_agent
+from google.adk.agents import Agent, AgentContext, SequentialAgent, register_agent
 from google.adk.managers import SessionState
 from google.cloud import aiplatform
 from sendgrid import SendGridAPIClient

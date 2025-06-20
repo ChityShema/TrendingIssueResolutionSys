@@ -1,8 +1,8 @@
 """ResponseMemory agent for maintaining consistent responses."""
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
-from google.adk import Agent, AgentContext, register_agent
+from google.adk.agents import Agent, AgentContext, register_agent
 from google.adk.managers import SessionState
 from google.cloud import aiplatform
 
@@ -111,13 +111,13 @@ class ResponseMemoryAgent(Agent):
         if not resolution:
             return {"consistent_resolution": None}
         
-        # Get Firestore tool
-        firestore_tool = context.get_tool("firestore_tool")
-        if not firestore_tool:
-            raise RuntimeError("Firestore tool not found")
+        # Get Datastore tool
+        datastore_tool = context.get_tool("datastore_tool")
+        if not datastore_tool:
+            raise RuntimeError("Datastore tool not found")
         
         # Get similar past responses
-        past_responses = await firestore_tool.get_similar_responses(
+        past_responses = await datastore_tool.get_similar_responses(
             issue_type=resolution["issue_type"],
             product_area=resolution["product_area"],
         )
@@ -138,9 +138,9 @@ class ResponseMemoryAgent(Agent):
         # Update session state
         context.session.state["final_resolution"] = consistent_resolution
         
-        # If resolution was modified, update in Firestore
+        # If resolution was modified, update in Datastore
         if consistent_resolution.get("consistency_changes"):
-            await firestore_tool.update_response_metrics(
+            await datastore_tool.update_response_metrics(
                 response_id=resolution["id"],
                 metrics={
                     "consistency_adjusted": True,

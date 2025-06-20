@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, Optional
 
-from google.adk import Agent, AgentContext, register_agent
+from google.adk.agents import Agent, AgentContext, register_agent
 from google.adk.managers import SessionState
 from google.cloud import aiplatform
 
@@ -110,10 +110,10 @@ Please generate a comprehensive resolution that includes:
         # Update session state
         context.session.state["final_resolution"] = resolution
         
-        # Save resolution to Firestore
-        firestore_tool = context.get_tool("firestore_tool")
-        if firestore_tool:
-            resolution_id = await firestore_tool.save_response(
+        # Save resolution to Datastore
+        datastore_tool = context.get_tool("datastore_tool")
+        if datastore_tool:
+            resolution_id = await datastore_tool.save_response(
                 issue_summary=summary,
                 resolution=resolution,
                 channels=["ui", "email", "crm"],

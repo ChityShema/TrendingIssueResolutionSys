@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, Optional
 
-from google.adk import Agent, AgentContext, register_agent
+from google.adk.agents import Agent, AgentContext, register_agent
 from google.adk.managers import SessionState
 
 from ...tools.bigquery_tool import BigQueryTool

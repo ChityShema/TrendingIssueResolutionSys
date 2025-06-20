@@ -11,7 +11,7 @@ from google.adk.agents import (
     register_tool,
 )
 from google.adk.managers import SessionState
-from google.cloud import aiplatform, bigquery, firestore
+from google.cloud import aiplatform, bigquery, datastore
 
 from .prompt import ROOT_AGENT_PROMPT
 from .sub_agents.context_fetcher.agent import ContextFetcherAgent
@@ -23,7 +23,7 @@ from .sub_agents.resolution_generator.agent import ResolutionGeneratorAgent
 from .sub_agents.response_memory.agent import ResponseMemoryAgent
 from .sub_agents.trend_summarizer.agent import TrendSummarizerAgent
 from .tools.bigquery_tool import BigQueryTool
-from .tools.firestore_tool import FirestoreTool
+from .tools.datastore_tool import DatastoreTool
 
 
 @register_agent
@@ -84,11 +84,11 @@ class TrendingIssueResolverAgent(SequentialAgent):
         """Initialize and register tools used by the agent system."""
         # Initialize GCP clients
         bq_client = bigquery.Client()
-        firestore_client = firestore.Client()
+        datastore_client = datastore.Client()
         
         # Register tools
         register_tool(BigQueryTool(bq_client))
-        register_tool(FirestoreTool(firestore_client))
+        register_tool(DatastoreTool(datastore_client))
 
     async def initialize_session(self, context: AgentContext) -> None:
         """Initialize session state with required configuration."""

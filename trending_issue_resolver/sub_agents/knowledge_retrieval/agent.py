@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, List, Optional
 
-from google.adk import Agent, AgentContext, register_agent
+from google.adk.agents import Agent, AgentContext, register_agent
 from google.adk.managers import SessionState
 from google.cloud import aiplatform
 
@@ -67,10 +67,10 @@ class KnowledgeRetrievalAgent(Agent):
         if not summary:
             return {"kb_hits": None}
         
-        # Get Firestore tool
-        firestore_tool = context.get_tool("firestore_tool")
-        if not firestore_tool:
-            raise RuntimeError("Firestore tool not found")
+        # Get Datastore tool
+        datastore_tool = context.get_tool("datastore_tool")
+        if not datastore_tool:
+            raise RuntimeError("Datastore tool not found")
         
         # Get Vertex AI client for keyword extraction
         vertex_ai = aiplatform.gapic.VertexAIClient()
@@ -80,7 +80,7 @@ class KnowledgeRetrievalAgent(Agent):
         keywords = await self._extract_keywords(issue_text, vertex_ai)
         
         # Search knowledge base
-        kb_articles = await firestore_tool.search_knowledge_base(
+        kb_articles = await datastore_tool.search_knowledge_base(
             issue_type=summary["primary_issue"]["type"],
             product_area=summary["primary_issue"]["product_area"],
             keywords=keywords,
